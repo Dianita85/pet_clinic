@@ -1,8 +1,8 @@
 import { AppError } from "../../common/errors/appError.js";
+import { catchAsync } from "../../common/errors/catchAsync.js";
 import { UserService } from "./user.service.js";
 
-export const validaExistUser = async (req, res, next) => {
-  try {
+export const validaExistUser = catchAsync ( async (req, res, next) => {
     
     const { id } = req.params;
 
@@ -18,17 +18,4 @@ export const validaExistUser = async (req, res, next) => {
 
     next();
 
-  } catch (error) {
-
-    console.log(error);
-
-    return res.status(500).json({
-
-      status: 'fail',
-
-      message: 'something went very wrang!',
-
-      error,
-    });
-  }
-};
+});
