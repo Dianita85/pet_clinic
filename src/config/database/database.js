@@ -24,5 +24,4 @@ export async function syncUp(){
     }catch(error){
         console.log(error);
     }
-
 }
