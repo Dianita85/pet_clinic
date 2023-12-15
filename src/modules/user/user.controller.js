@@ -1,26 +1,21 @@
 import { AppError } from '../../common/errors/appError.js';
-import { catchAsync  } from '../../common/errors/catchAsync.js';
+import { catchAsync } from '../../common/errors/catchAsync.js';
 import { validateUser, validatePartialUser } from './user.schema.js';
 import { UserService } from './user.service.js';
 
-
 export const register = catchAsync(async (req, res, next) => {
-
   //  const { hasError, errorMessages, userData } = validateUser(req.body);
 
   //  if (hasError) {
-    //  return res.status(422).json({
-      //  status: 'error',
-      //  message: errorMessages,
-     // });
+  //  return res.status(422).json({
+  //  status: 'error',
+  //  message: errorMessages,
+  // });
   //  }
 
-    const user = await UserService.create(req.body);
+  const user = await UserService.create(req.body);
 
-    return res.status(201).json(user);
-  
-
-
+  return res.status(201).json(user);
 });
 
 export const login = catchAsync(async (req, res, next) => {

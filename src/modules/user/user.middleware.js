@@ -1,21 +1,17 @@
-import { AppError } from "../../common/errors/appError.js";
-import { catchAsync } from "../../common/errors/catchAsync.js";
-import { UserService } from "./user.service.js";
+import { AppError } from '../../common/errors/appError.js';
+import { catchAsync } from '../../common/errors/catchAsync.js';
+import { UserService } from './user.service.js';
 
-export const validaExistUser = catchAsync ( async (req, res, next) => {
-    
-    const { id } = req.params;
+export const validaExistUser = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
 
-    const user = await UserService.findOne(id);
+  const user = await UserService.findOne(id);
 
+  if (!user) {
+    return next(new AppError(`user with id: ${id} not found`, 404)); //abre e lbasureruo
+  }
 
-    if (!user) {
-      return next(new AppError(`user with id: ${id} not found`, 404))
-     
-    }
+  req.user = user;
 
-    req.user = user;
-
-    next();
-
+  next();
 });

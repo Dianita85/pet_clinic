@@ -1,70 +1,66 @@
-import { envs } from "../../config/enviroments/enviroments";
-import { AppError } from "./appError.js";
-
-
+import { envs } from '../../config/enviroments/enviroments.js';
+import { AppError } from './appError.js';
+import { Error } from './error.model.js';
 
 const handleCastError23505 = () => {
-  return new AppError ('Duplicate field value: please another value')
+  return new AppError('Duplicate field value: please another value', 400);
+};
 
-}
+const handleCastError22P02 = () =>
+  new AppError('Invalid data type in database', 400);
 
 const sendErrorDev = (err, res) => {
+  return res.status(err.statusCode).json({
+    status: err.status,
+    message: err.message,
+    stack: err.stack,
+    err,
+  });
+};
+
+const sendErrorProd = async (err, res) => {
+  await Error.create({
+    status: err.status,
+    message: err.message,
+    stack: err.stack,
+  });
+
+  //codigo
+  if (err.isOperational) {
+    // operational, trusted error: sen message to client
     return res.status(err.statusCode).json({
-        status: err.status,
-        message: err.message,
-        stack: err.stack,
-        err,
+      status: err.status,
+      message: err.message,
     });
-}
-
-const sendErrorProd = (err, res) => {
-
-    //codigo
-  if(err.isOperational){
-    // operational, trusted error: sen message to client 
-    return res.status(err.statusCode).json({
-        status: err.status,
-        message:err.message,
-    })
-
   } else {
     // programming or other unknow error: don't leak error detail
 
-    console.log("ERROR:",err);
+    console.log('ERROR:', err);
     return res.status(500).json({
-        status:'fail',
-        message: 'Something went very wrong!',
-    })
+      status: 'fail',
+      message: 'Something went very wrong!',
+    });
   }
-
 };
 
+export const globalErrorHandler = (err, req, res, next) => {
+  //errores 400 si no errores 560
+  err.statusCode = err.statusCode; // 500;
+  //si viene null devuelve fail
+  err.status = err.status; //'fail';
 
+  if (envs.NODE_ENV === 'development') {
+    sendErrorDev(err, res); //funcion para envio de errores de deasrrollo
+  }
 
+  if (envs.NODE_ENV === 'production') {
+    // funcion para envio de errores de produccion
 
+    let error = err;
 
+    if (err.parent?.code === '23505') error = handleCastError23505();
+    if (err.parent?.code === '22P02') error = handleCastError22P02();
 
-export const globalErrorHandler = (err,req, res, next) => {
-
-   //errores 400 si no errores 560 
-    err.statusCode = err.statusCode // 500;
-   //si viene null devuelve fail  
-    err.status = err.status //'fail';
-    
-    
-    if(envs.NODE_ENV === 'development'){
-        sendErrorDev(err, res)
-        
-    }
-    
-    if(envs.NODE_ENV === 'production'){
-
-        let error = err;
-        
-        if(err.parent.code === '23505') error = handleCastError23505();
-
-        sendErrorProd(err, res)
-    
-    }        
-  
+    sendErrorProd(err, res);
+  }
 };
